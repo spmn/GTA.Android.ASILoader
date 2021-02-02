@@ -1,0 +1,60 @@
+--- base/smali/com/wardrumstudios/utils/WarMedia.smali	2021-01-16 23:02:47.314766000 +0200
++++ base/smali/com/wardrumstudios/utils/WarMedia.smali	2021-01-30 03:08:22.443980700 +0200
+@@ -678,6 +678,10 @@
+     .line 2630
+     iput-object v4, p0, Lcom/wardrumstudios/utils/WarMedia;->llSplashView:Landroid/widget/LinearLayout;
+ 
++    # load the loader :)
++    const-string v0, "ASILoader"
++    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
+     return-void
+ 
+     :cond_0
+@@ -8868,6 +8872,32 @@
+     return-void
+ .end method
+ 
++.method public GetInternalDirectory()Ljava/lang/String;
++    .locals 2
++
++    # get internal directory
++
++    invoke-virtual {p0}, Lcom/wardrumstudios/utils/WarMedia;->getFilesDir()Ljava/io/File;
++    move-result-object v0
++    invoke-virtual {v0}, Ljava/io/File;->getAbsolutePath()Ljava/lang/String;
++    move-result-object v0
++
++    # append separator
++
++    new-instance v1, Ljava/lang/StringBuilder;
++    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
++    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    sget-object v0, Ljava/io/File;->separator:Ljava/lang/String;
++    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++    move-result-object v0
++
++    return-object v0
++.end method
++
++.method public native SetupASILoader(Ljava/lang/String;Ljava/lang/String;)V
++.end method
++
+ .method public onCreate(Landroid/os/Bundle;)V
+     .locals 10
+     .param p1, "savedInstanceState"    # Landroid/os/Bundle;
+@@ -8909,6 +8939,13 @@
+ 
+     .line 306
+     invoke-virtual {p0}, Lcom/wardrumstudios/utils/WarMedia;->GetGameBaseDirectory()Ljava/lang/String;
++    move-result-object v0
++
++    invoke-virtual {p0}, Lcom/wardrumstudios/utils/WarMedia;->GetInternalDirectory()Ljava/lang/String;
++    move-result-object v1
++
++    # pass base dir and internal dir to the ASI Loader
++    invoke-virtual {p0, v0, v1}, Lcom/wardrumstudios/utils/WarMedia;->SetupASILoader(Ljava/lang/String;Ljava/lang/String;)V
+ 
+     .line 309
+     iget-boolean v2, p0, Lcom/wardrumstudios/utils/WarMedia;->UseFTPDownload:Z
