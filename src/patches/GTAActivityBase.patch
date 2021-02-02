@@ -1,0 +1,123 @@
+--- base/smali/com/rockstargames/gtalcs/GTAActivityBase.smali	2021-02-02 22:56:06.230712500 +0200
++++ base/smali/com/rockstargames/gtalcs/GTAActivityBase.smali	2021-02-02 22:54:58.682965200 +0200
+@@ -76,6 +76,10 @@
+ 
+     iput-boolean v2, p0, Lcom/rockstargames/gtalcs/GTAActivityBase;->mHasVibrator:Z
+ 
++    # load the loader :)
++    const-string v0, "ASILoader"
++    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
+     return-void
+ .end method
+ 
+@@ -726,6 +730,91 @@
+     return-void
+ .end method
+ 
++.method public GetGameBaseDirectory()Ljava/lang/String;
++    # taken from WarDrum GTAs
++    .locals 3
++
++    invoke-static {}, Landroid/os/Environment;->getExternalStorageState()Ljava/lang/String;
++    move-result-object v1
++
++    const-string v2, "mounted"
++    invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++    move-result v1
++
++    if-eqz v1, :cond_0
++
++    const/4 v1, 0x0
++
++    :try_start_0
++    invoke-virtual {p0, v1}, Lcom/rockstargames/gtalcs/GTAActivityBase;->getExternalFilesDir(Ljava/lang/String;)Ljava/io/File;
++    move-result-object v0
++
++    invoke-virtual {v0}, Ljava/io/File;->getAbsolutePath()Ljava/lang/String;
++
++    new-instance v1, Ljava/lang/StringBuilder;
++    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
++    invoke-virtual {v0}, Ljava/io/File;->getAbsolutePath()Ljava/lang/String;
++    move-result-object v2
++
++    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    move-result-object v1
++
++    const-string v2, "/"
++    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    move-result-object v1
++
++    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++    :try_end_0
++    .catch Ljava/lang/NullPointerException; {:try_start_0 .. :try_end_0} :catch_1
++    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
++
++    move-result-object v1
++
++    :goto_0
++    return-object v1
++
++    :catch_0
++    move-exception v1
++
++    :cond_0
++    :goto_1
++
++    const-string v1, ""
++
++    goto :goto_0
++
++    :catch_1
++    move-exception v1
++
++    goto :goto_1
++.end method
++
++.method public GetInternalDirectory()Ljava/lang/String;
++    .locals 2
++
++    # get internal directory
++
++    invoke-virtual {p0}, Lcom/rockstargames/gtalcs/GTAActivityBase;->getFilesDir()Ljava/io/File;
++    move-result-object v0
++    invoke-virtual {v0}, Ljava/io/File;->getAbsolutePath()Ljava/lang/String;
++    move-result-object v0
++
++    # append separator
++
++    new-instance v1, Ljava/lang/StringBuilder;
++    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
++    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    sget-object v0, Ljava/io/File;->separator:Ljava/lang/String;
++    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++    move-result-object v0
++
++    return-object v0
++.end method
++
++.method public native SetupASILoader(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
++.end method
++
+ .method public onCreate(Landroid/os/Bundle;)V
+     .locals 7
+ 
+@@ -1006,6 +1095,17 @@
+ 
+     invoke-static {v0}, Lcom/rockstargames/gtalcs/GTAJNIlib;->setHasVibrator(Z)V
+ 
++    invoke-virtual {p0}, Lcom/rockstargames/gtalcs/GTAActivityBase;->GetGameBaseDirectory()Ljava/lang/String;
++    move-result-object v0
++
++    invoke-virtual {p0}, Lcom/rockstargames/gtalcs/GTAActivityBase;->GetInternalDirectory()Ljava/lang/String;
++    move-result-object v1
++
++    const-string v2, "libGTALcs.so"
++
++    # pass base dir, internal dir and game lib to the ASI Loader
++    invoke-virtual {p0, v0, v1, v2}, Lcom/rockstargames/gtalcs/GTAActivityBase;->SetupASILoader(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
++
+     return-void
+ 
+     :cond_2

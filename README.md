@@ -1,6 +1,6 @@
-# III.VC.SA.Android.ASILoader
+# GTA.Android.ASILoader
 
-Proof of concept shared library (`.so`) loader for GTA III/VC/SA
+Proof of concept shared library (`.so`) loader for GTA III/VC/SA/LCS
 
 ## Quick info
 
@@ -36,7 +36,9 @@ This way libs can be updated with a simple `adb push` to the app external direct
 ## Installation
 
 1. Unpack the APK (apktool)
-2. Apply `src/WarMedia.patch` (patch)
+2. Apply: (patch)
+    - `src/patches/WarMedia.patch` for GTA III/VC/SA
+    - `src/patches/GTAActivityBase.patch` for GTA LCS
 3. Build the ASI Loader (ndk-build)
 4. Copy `libASILoader.so` to `<unpack>/lib/armeabi-v7a/`
 5. Rebuild the APK (apktool)

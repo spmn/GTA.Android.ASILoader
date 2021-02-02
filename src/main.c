@@ -240,6 +240,10 @@ int LoadASIMods(void)
 }
 
 JNIEXPORT void JNICALL
+__attribute__((alias("Java_com_wardrumstudios_utils_WarMedia_SetupASILoader")))
+Java_com_rockstargames_gtalcs_GTAActivityBase_SetupASILoader(JNIEnv *env, jobject thiz, jstring baseDir, jstring internalDir, jstring GTASOLibFile);
+
+JNIEXPORT void JNICALL
 Java_com_wardrumstudios_utils_WarMedia_SetupASILoader(JNIEnv *env, __attribute__((unused)) jobject thiz, jstring baseDir, jstring internalDir, jstring GTASOLibFile)
 {
     const char *dir;

@@ -20,21 +20,38 @@ typedef struct {
 } CRGBA;
 
 
-void Redirect(void *src, void *dst)
+void Redirect(void *src, void *dst, int thumb)
 {
-    // assume thumb mode
-    unsigned int adjustedSrc = (unsigned int)(src) & 0xFFFFFFFE;
-    unsigned int adjustedDst = (unsigned int)(dst) | 0x00000001;
+    unsigned int adjustedSrc = (unsigned int)(src);
+    unsigned int adjustedDst = (unsigned int)(dst);
     char code[8];
 
-    *(unsigned int *)&code[0] = 0xF000F8DF;  // ldr.w pc, [pc] ; +0x04
-    *(unsigned int *)&code[4] = adjustedDst; // .word DEST
+    if (thumb) {
+        adjustedSrc &= 0xFFFFFFFE;
+        adjustedDst |= 0x00000001;       
+        *(unsigned int *)&code[0] = 0xF000F8DF;  // ldr.w pc, [pc] ; +0x04
+    } else {
+        *(unsigned int *)&code[0] = 0xE51FF004;  // ldr pc, [pc, #-4] ; +0x04
+    }
 
+    *(unsigned int *)&code[4] = adjustedDst; // .word DEST
     memcpy((void *)adjustedSrc, code, sizeof(code));
     cacheflush(adjustedSrc, adjustedSrc + sizeof(code), 0);
 }
 
-CRGBA *CRGBA__ctor(CRGBA *this, __attribute__((unused)) char r, __attribute__((unused)) char g, __attribute__((unused)) char b, char a)
+__attribute__((target("arm")))
+CRGBA *CRGBA__ctor_arm(CRGBA *this, __attribute__((unused)) char r, __attribute__((unused)) char g, __attribute__((unused)) char b, char a)
+{
+    // randimize colours
+    this->r = rand();
+    this->g = rand();
+    this->b = rand();
+    this->a = a;
+
+    return this;
+}
+
+CRGBA *CRGBA__ctor_thumb(CRGBA *this, __attribute__((unused)) char r, __attribute__((unused)) char g, __attribute__((unused)) char b, char a)
 {
     // randimize colours
     this->r = rand();
@@ -55,5 +72,14 @@ void InitializeASI(void *pGTAHandle, void *pGTABaseAddress, const char *szGTASOL
         return;
     }
 
-    Redirect(sym, CRGBA__ctor);
+    ALOGI("Symbol CRGBA::CRGBA is located at %p.", sym);
+
+    if ((unsigned int)(sym) & 1) {
+        // thumb mode (WarDrum)
+        Redirect(sym, CRGBA__ctor_thumb, 1);
+    }
+    else {
+        // arm mode (Lucid)
+        Redirect(sym, CRGBA__ctor_arm, 0);
+    }    
 }
