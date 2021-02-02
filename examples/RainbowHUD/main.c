@@ -6,7 +6,7 @@
 #include <dlfcn.h>
 
 
-#define LOG_TAG "GTA:SA RainbowHUD"
+#define LOG_TAG "GTA RainbowHUD"
 
 #define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 #define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -45,9 +45,9 @@ CRGBA *CRGBA__ctor(CRGBA *this, __attribute__((unused)) char r, __attribute__((u
     return this;
 }
 
-void InitializeASI(void *pGTAHandle, void *pGTABaseAddress, const char *szExternalASIDir)
+void InitializeASI(void *pGTAHandle, void *pGTABaseAddress, const char *szGTASOLibFile, const char *szExternalASIDir)
 {
-    ALOGI("InitializeASI(pGTAHandle = %p, pGTABaseAddress = %p, szExternalASIDir = %s)", pGTAHandle, pGTABaseAddress, szExternalASIDir);
+    ALOGI("InitializeASI(pGTAHandle = %p, pGTABaseAddress = %p, szGTASOLibFile = %s, szExternalASIDir = %s)", pGTAHandle, pGTABaseAddress, szGTASOLibFile, szExternalASIDir);
 
     void *sym = dlsym(pGTAHandle, "_ZN5CRGBAC2Ehhhh");
     if (sym == NULL) {

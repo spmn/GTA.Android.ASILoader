@@ -1,4 +1,7 @@
-base.apk
-base/
-libs
-obj
+*.apk
+*.log
+
+tools/
+apks/
+libs/
+obj/

@@ -12,7 +12,7 @@
 #include <android/log.h>
 
 
-#define LOG_TAG "GTA:SA ASI Loader"
+#define LOG_TAG "GTA ASI Loader"
 
 #define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 #define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -25,6 +25,7 @@ int  g_iLoaderInited;
 int  g_iLoadedMods;
 char g_szExternalASIDir[PATH_MAX];
 char g_szInternalASIDir[PATH_MAX];
+char g_szGTASOLibFile[PATH_MAX];
 void *g_pGTAHandle;
 void *g_pGTABaseAddress;
 
@@ -76,7 +77,7 @@ int DlIterator(struct dl_phdr_info *info, __attribute__((unused)) size_t size, v
                 g_pGTABaseAddress = (void *)(base + first_load->p_vaddr);
 
                 if (mprotect(g_pGTABaseAddress, first_load->p_memsz, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
-                    ALOGW("Can't unprotect libGTASA.so, err: %s (%d)", strerror(errno), errno);
+                    ALOGW("Can't unprotect %s, err: %s (%d)", g_szGTASOLibFile, strerror(errno), errno);
                 }
                 return 1;
             }
@@ -123,7 +124,7 @@ int LoadASI(const char *file)
 {
     void *handle;
     char *err;
-    void (*pfnInit)(void *, void *, const char *);
+    void (*pfnInit)(void *, void *, const char *, const char *);
 
     handle = dlopen(file, RTLD_LAZY);
     if (!handle) {
@@ -144,7 +145,7 @@ int LoadASI(const char *file)
         return 1;
     }
 
-    pfnInit(g_pGTAHandle, g_pGTABaseAddress, g_szExternalASIDir);
+    pfnInit(g_pGTAHandle, g_pGTABaseAddress, g_szGTASOLibFile, g_szExternalASIDir);
     return 1;
 }
 
@@ -239,7 +240,7 @@ int LoadASIMods(void)
 }
 
 JNIEXPORT void JNICALL
-Java_com_wardrumstudios_utils_WarMedia_SetupASILoader(JNIEnv *env, __attribute__((unused)) jobject thiz, jstring baseDir, jstring internalDir)
+Java_com_wardrumstudios_utils_WarMedia_SetupASILoader(JNIEnv *env, __attribute__((unused)) jobject thiz, jstring baseDir, jstring internalDir, jstring GTASOLibFile)
 {
     const char *dir;
 
@@ -267,10 +268,19 @@ Java_com_wardrumstudios_utils_WarMedia_SetupASILoader(JNIEnv *env, __attribute__
     sprintf(g_szInternalASIDir, "%sASI/", dir);
     (*env)->ReleaseStringUTFChars(env, internalDir, dir);
 
+    dir = (*env)->GetStringUTFChars(env, GTASOLibFile, NULL);
+    if (!dir) {
+        ALOGE("Can't get game .so library file name.");
+        return;
+    }
+    sprintf(g_szGTASOLibFile, "%s", dir);
+    (*env)->ReleaseStringUTFChars(env, GTASOLibFile, dir);
+
     ALOGI("ExternalASIDir = %s", g_szExternalASIDir);
     ALOGI("InternalASIDir = %s", g_szInternalASIDir);
+    ALOGI("GTASOLibFile   = %s", g_szGTASOLibFile);
 
-    StoreGTAHandleAndBaseAddress("libGTASA.so");
+    StoreGTAHandleAndBaseAddress(g_szGTASOLibFile);
     LoadASIMods();
 
     ALOGI("Loaded %d ASI mods!", g_iLoadedMods);

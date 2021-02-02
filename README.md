@@ -1,6 +1,6 @@
-# SA.Android.ASILoader
+# III.VC.SA.Android.ASILoader
 
-Proof of concept shared library (`.so`) loader for GTA:SA
+Proof of concept shared library (`.so`) loader for GTA III/VC/SA
 
 ## Quick info
 
@@ -21,14 +21,14 @@ However, this approach comes with a big downside: you have to rebuild and reinst
 ## Solution
 
 A master mod (ASI Loader) is packed into the APK like a normal mod.
-Everytime the app starts, the ASI Loader scans `Android/data/com.rockstargames.gtasa/ASI/` directory for `.asi` files,
+Everytime the app starts, the ASI Loader scans `Android/data/<appid>/files/ASI/` directory for `.asi` files,
 copies them to internal storage then loads them into the process.
 
 This way libs can be updated with a simple `adb push` to the app external directory.
 
 ## Requirements
 
-- GTA:SA .apk file (preferably the latest version, otherwise the patch file might fail)
+- GTA .apk file (preferably the latest version, otherwise the .patch file might fail)
 - Android NDK
 - apktool
 - uber-apk-signer
@@ -43,5 +43,5 @@ This way libs can be updated with a simple `adb push` to the app external direct
 6. Sign the APK (uber-apk-signer)
 7. Copy and install the signed APK
 
-If everything went good, you should see a message in `logcat` from the ASI Loader.
+If everything went good, you should see a message in `logcat` from the ASI Loader at game startup.
 You can also build and load the example mod.
